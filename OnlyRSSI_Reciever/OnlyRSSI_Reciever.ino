@@ -31,8 +31,8 @@ int len = 0;
 void setup()
 {
     Serial.begin(9600);
-    xbee.setSerial(Serial3);
-    Serial3.begin(9600);
+    xbee.setSerial(Serial2);
+    Serial2.begin(9600);
     //SD Card
     pinMode(CS_pin, OUTPUT);//declaring CS pin as output pin
     if (SD.begin())
@@ -49,10 +49,36 @@ void setup()
     delay(5000);
 }
 
+void write_to_SD(float x1,float y1,float z1,float x2,float y2,float z2,int count,int RSSI_VALUE)
+{
+            sdcard_file = SD.open("data.csv", FILE_WRITE); //Looking for the data.txt in SD card
+            sdcard_file.print(count-1);
+            sdcard_file.print(',');
+            sdcard_file.print(RSSI_VALUE);
+            sdcard_file.print(',');
+            sdcard_file.print(x1);
+            sdcard_file.print(',');
+            sdcard_file.print(y1);
+            sdcard_file.print(',');
+            sdcard_file.print(z1);
+            sdcard_file.print(',');
+            sdcard_file.print(x2);
+            sdcard_file.print(',');
+            sdcard_file.print(y2);
+            sdcard_file.print(',');
+            sdcard_file.print(z2);
+            sdcard_file.print("\n");
+            
+            sdcard_file.close();
+   
+
+   
+  
+  }
 void loop()
 {
     
-    sdcard_file = SD.open("data.txt", FILE_WRITE); //Looking for the data.txt in SD card
+   
     xbee.readPacket(10);
     if (xbee.getResponse().isAvailable())
     {
@@ -85,24 +111,7 @@ void loop()
             
 
             count++;
-            sdcard_file.print(count-1);
-            sdcard_file.print(',');
-            sdcard_file.print(RSSI_VALUE);
-            sdcard_file.print(',');
-            sdcard_file.print(XBeeData.x1);
-            sdcard_file.print(',');
-            sdcard_file.print(XBeeData.y1);
-            sdcard_file.print(',');
-            sdcard_file.print(XBeeData.z1);
-            sdcard_file.print(',');
-            sdcard_file.print(XBeeData.x2);
-            sdcard_file.print(',');
-            sdcard_file.print(XBeeData.y2);
-            sdcard_file.print(',');
-            sdcard_file.print(XBeeData.z2);
-            sdcard_file.print("\n");
-            
-            sdcard_file.close();
+            write_to_SD(XBeeData.x1,XBeeData.y1,XBeeData.z1,XBeeData.x2,XBeeData.y2,XBeeData.z2,count-1,RSSI_VALUE);
       
             Serial.println(count-1);
             Serial.println("Close");
