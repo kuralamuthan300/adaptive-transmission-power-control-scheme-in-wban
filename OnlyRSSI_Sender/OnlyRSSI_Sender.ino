@@ -58,5 +58,4 @@ void loop()
 
     
     xbee.send( tx16 );
-    delay(500);
 }
