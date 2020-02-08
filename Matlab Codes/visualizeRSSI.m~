@@ -32,7 +32,17 @@ g_Max_idx = [g_Max_idx,Total_samples(1,1)];
 
 local_max_RSSI = islocalmax(Smooth_RSSI);
 
-for itr
+Threshold = mean(Smooth_RSSI);
+
+g_max_size = size(g_Max_idx);
+
+avg_rssi = [Threshold];
+for itr=1:1:g_max_size(1,2)-1
+    threshold = threshold_calc(Smooth_RSSI,local_max_RSSI,g_Max_idx(1,itr),g_Max_idx(1,itr+1));
+    avg_rssi = [avg_rssi,threshold];
+end
+
+
 
 
 % Functions
@@ -50,7 +60,7 @@ end
 
 
 %local_max average
-function avg = l_max_avg(Array,l_max,s,e)
+function avg = threshold_calc(Array,l_max,s,e)
 count = 0;
 sum = 0;
 for itr=s:1:e
