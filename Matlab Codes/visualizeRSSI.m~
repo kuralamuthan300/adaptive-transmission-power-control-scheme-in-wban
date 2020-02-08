@@ -15,7 +15,6 @@ for itr = 1:Total_samples(1,1)
     Acc_Mag(itr,1) = sum^0.5;
 end
  Smooth_RSSI = sgolayfilt(RSSI,7,21);
- Smooth_Acc  = sgolayfilt(Acc_Mag,7,21);
- plot(Time_steps,Smooth_Acc)
+ Smooth
  
     
