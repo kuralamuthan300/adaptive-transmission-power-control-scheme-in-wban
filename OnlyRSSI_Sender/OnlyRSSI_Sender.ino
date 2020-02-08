@@ -16,6 +16,8 @@ XBee xbee = XBee();
 //MPU6050
 const int MPU = 0x68;
 
+//label button
+
 void setup()
 {
     Serial.begin(9600);
@@ -25,12 +27,18 @@ void setup()
     Wire.write(0x6B);                 
     Wire.write(0x00);                  
     Wire.endTransmission(true);
+
+   
+
+
     //To initialize Xbee Modules
     delay(5000);
 }
 
 void loop()
 {
+  //Activity label
+   
     //Accellerometer
     Wire.beginTransmission(MPU);
     Wire.write(0x3B); 
@@ -51,6 +59,7 @@ void loop()
     XBeeData.x2 = (Wire.read() << 8 | Wire.read()) / 131.0; 
     XBeeData.y2 = (Wire.read() << 8 | Wire.read()) / 131.0;
     XBeeData.z2 = (Wire.read() << 8 | Wire.read()) / 131.0;
+
 
     
     XBeeAddress64 addr64 = XBeeAddress64(0x0000, 0xFFFF);

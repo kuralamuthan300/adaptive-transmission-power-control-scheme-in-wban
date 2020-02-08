@@ -30,17 +30,17 @@ int len = 0;
 
 void setup()
 {
-    Serial.begin(9600);
+    
     xbee.setSerial(Serial2);
     Serial2.begin(9600);
     //SD Card
     pinMode(CS_pin, OUTPUT);//declaring CS pin as output pin
     if (SD.begin())
     {
-      Serial.println("SD card is initialized and it is ready to use");
+      //Serial.println("SD card is initialized and it is ready to use");
     } else
     {
-    Serial.println("SD card is not initialized");
+    //Serial.println("SD card is not initialized");
     return;
     }
    
@@ -88,10 +88,12 @@ void loop()
             data = rx16.getData();
             len = rx16.getDataLength();
             XBeeData = (XBeeDataStruct &)*data;
+            int RSSI_VALUE = -1*rx16.getRssi();
             //Print.
+            /*
             Serial.println("Data Obtained:");
             Serial.print("\tRSSI = ");
-            int RSSI_VALUE = -1*rx16.getRssi(); 
+             
             Serial.print(RSSI_VALUE);
             Serial.print("\tAccX = ");
             Serial.print(XBeeData.x1);
@@ -108,13 +110,13 @@ void loop()
             Serial.print("\tGyroZ = ");
             Serial.print(XBeeData.z2);
             Serial.println();
-            
+            */
 
             count++;
             write_to_SD(XBeeData.x1,XBeeData.y1,XBeeData.z1,XBeeData.x2,XBeeData.y2,XBeeData.z2,count-1,RSSI_VALUE);
-      
-            Serial.println(count-1);
-            Serial.println("Close");
+            
+            //Serial.println(count-1);
+            //Serial.println("Close");
             
         }
     }
