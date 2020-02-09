@@ -121,7 +121,7 @@ end
 
 %local_max average
 function avg = threshold_calc(Smooth_RSSI,local_max_RSSI,s,e)
-count = 0;
+count = 1;
 sum = 0;
 for itr=s:1:e
     if(local_max_RSSI(itr,1) == 1)
@@ -129,8 +129,17 @@ for itr=s:1:e
         count = count+1;
     end
 end
-avg = sum/count;
+avg = sum/(count-1);
 
     
 end
 
+%Threshold RSSI visualization for every 3 seconds
+%Threshold RSSI visualization for every 3 seconds
+%Threshold RSSI visualization for every 3 seconds
+%Threshold RSSI visualization for every 3 seconds
+%Threshold RSSI visualization for every 3 seconds
+%Threshold RSSI visualization for every 3 seconds
+%Threshold RSSI visualization for every 3 seconds
+%Threshold RSSI visualization for every 3 seconds
+%Threshold RSSI visualization for every 3 seconds
