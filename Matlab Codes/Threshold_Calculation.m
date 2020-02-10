@@ -1,6 +1,6 @@
 clear;
-CSV_file = csvread("data.csv");
-
+%CSV_file = csvread("Dataset/Train/walking.csv");
+CSV_file = csvread("Dataset/Test/test.csv");
 Time  = CSV_file(:,1);
 RSSI  = CSV_file(:,2);
 Acc_x = CSV_file(:,3);
@@ -37,7 +37,7 @@ hold off
 figure(2)
 plot(Smooth_Acc);
 hold on
-plot(Acc_Mag);
+plot(Smooth_Acc);
 legend('After smoothening','Before Smoothening')
 title('Acceleration magnitude Smoothening')
 hold off
@@ -133,13 +133,3 @@ avg = sum/(count-1);
 
     
 end
-
-%Threshold RSSI visualization for every 3 seconds
-%Threshold RSSI visualization for every 3 seconds
-%Threshold RSSI visualization for every 3 seconds
-%Threshold RSSI visualization for every 3 seconds
-%Threshold RSSI visualization for every 3 seconds
-%Threshold RSSI visualization for every 3 seconds
-%Threshold RSSI visualization for every 3 seconds
-%Threshold RSSI visualization for every 3 seconds
-%Threshold RSSI visualization for every 3 seconds
