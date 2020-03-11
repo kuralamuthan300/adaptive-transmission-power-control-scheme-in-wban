@@ -12,6 +12,7 @@ int start = 1;
 XBee xbee = XBee();
 
 typedef struct XBeeStruct {
+  long seq;
   float x1;
   float y1;
   float z1;
@@ -27,6 +28,7 @@ static XBeeDataStruct XBeeData;
 Rx16Response rx16 = Rx16Response();
 uint8_t* data = 0;
 int len = 0;
+long sequence = 1;
 
 void setup()
 {
@@ -49,7 +51,7 @@ void setup()
     delay(5000);
 }
 
-void write_to_SD(float x1,float y1,float z1,float x2,float y2,float z2,int count,int RSSI_VALUE)
+void write_to_SD(float x1,float y1,float z1,float x2,float y2,float z2,int count,int RSSI_VALUE,long seq)
 {
             sdcard_file = SD.open("data.csv", FILE_WRITE); //Looking for the data.txt in SD card
             sdcard_file.print(count-1);
@@ -67,6 +69,8 @@ void write_to_SD(float x1,float y1,float z1,float x2,float y2,float z2,int count
             sdcard_file.print(y2);
             sdcard_file.print(',');
             sdcard_file.print(z2);
+            sdcard_file.print(',');
+            sdcard_file.print(seq);
             sdcard_file.print("\n");
             
             sdcard_file.close();
@@ -113,7 +117,8 @@ void loop()
             */
 
             count++;
-            write_to_SD(XBeeData.x1,XBeeData.y1,XBeeData.z1,XBeeData.x2,XBeeData.y2,XBeeData.z2,count-1,RSSI_VALUE);
+            write_to_SD(XBeeData.x1,XBeeData.y1,XBeeData.z1,XBeeData.x2,XBeeData.y2,XBeeData.z2,count-1,RSSI_VALUE,XBeeData.seq);
+           
             
             //Serial.println(count-1);
             //Serial.println("Close");

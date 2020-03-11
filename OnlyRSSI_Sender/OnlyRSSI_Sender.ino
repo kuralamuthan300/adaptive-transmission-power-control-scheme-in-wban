@@ -3,6 +3,7 @@
 
 //Xbee struct
 typedef struct XBeeStruct {
+  long seq;
   float x1;
   float y1;
   float z1;
@@ -13,6 +14,7 @@ typedef struct XBeeStruct {
 static XBeeDataStruct XBeeData;
 XBee xbee = XBee();
 
+long sequence=1;
 //MPU6050
 const int MPU = 0x68;
 
@@ -60,6 +62,8 @@ void loop()
     XBeeData.y2 = (Wire.read() << 8 | Wire.read()) / 131.0;
     XBeeData.z2 = (Wire.read() << 8 | Wire.read()) / 131.0;
 
+    XBeeData.seq = sequence;
+    sequence++; 
 
     
     XBeeAddress64 addr64 = XBeeAddress64(0x0000, 0xFFFF);
