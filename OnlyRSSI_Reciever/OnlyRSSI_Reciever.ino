@@ -19,6 +19,7 @@ typedef struct XBeeStruct {
   float x2;
   float y2;
   float z2;
+  int rssi;
 } XBeeDataStruct;
 static XBeeDataStruct XBeeData;
 
@@ -144,11 +145,13 @@ void loop()
             */
 
             count++;
-            write_to_SD(XBeeData.x1,XBeeData.y1,XBeeData.z1,XBeeData.x2,XBeeData.y2,XBeeData.z2,count-1,RSSI_VALUE,XBeeData.seq);
-           
+            write_to_SD(XBeeData.x1,XBeeData.y1,XBeeData.z1,XBeeData.x2,XBeeData.y2,XBeeData.z2,count-1,XBeeData.rssi,XBeeData.seq);
+
+            //Sending ACK Packets
             XBeeAddress64 addr64 = XBeeAddress64(0x0000, 0xFFFF);
             Tx16Request tx16 = Tx16Request(addr64, (uint8_t *)&AckData, sizeof(AckPacketStruct));
             xbee.send( tx16 );
+            
             //Serial.println(count-1);
             //Serial.println("Close");
             
