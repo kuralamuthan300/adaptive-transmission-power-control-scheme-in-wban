@@ -1,0 +1,80 @@
+clear;
+CSV_file = csvread("Dataset/WithSeq/indoor1.csv");
+
+numFeatures = 6;
+numHiddenUnits = 200;
+numClasses = 5;
+
+layers = [ 
+    sequenceInputLayer(numFeatures)
+    lstmLayer(numHiddenUnits,'OutputMode','sequence')
+    fullyConnectedLayer(numClasses)
+    softmaxLayer
+    classificationLayer];
+
+clear numFeatures;
+clear numHiddenUnits;
+clear numClasses;
+
+options = trainingOptions('adam', ...
+    'MaxEpochs',10, ...
+    'GradientThreshold',2, ...
+    'Verbose',0, ...
+    'Plots','training-progress');
+
+total_samples = size(CSV_file);
+
+walking = magic(0);
+walking_up = magic(0);
+walking_down = magic(0);
+sitting = magic(0);
+standing = magic(0);
+for a = 1:total_samples(1,1)
+   row = CSV_file(a,:);
+   inertial_values=row(3:8);
+   label=row(10);
+   
+    if label == 1
+    walking = [walking;inertial_values];
+    end
+    if label == 2
+    walking_up= [walking_up;inertial_values];
+    end
+    if label == 3
+        walking_down= [walking_down;inertial_values];
+    end
+    if label == 4
+        sitting= [sitting;inertial_values];
+    end
+    if label == 5
+        standing= [standing;inertial_values];
+    end
+end
+
+clear a;
+Xtrain = cell(0,0);
+Xtrain = {transpose(walking);transpose(walking_up);transpose(walking_down);transpose(sitting);transpose(standing)};
+
+Wal_label = zeros();
+for i = 1 : size(walking)
+  Wal_label(i) = 1;
+end
+%c = row1;
+%c = [cell; row2]
+
+
+
+clear walking;
+clear walking_down;
+clear walking_up;
+clear sitting;
+clear standing;
+
+clear row;
+clear inertial_values;
+clear label;
+%net = trainNetwork(Xtrain,Ytrain,layers,options);
+
+
+
+function size = getSize()

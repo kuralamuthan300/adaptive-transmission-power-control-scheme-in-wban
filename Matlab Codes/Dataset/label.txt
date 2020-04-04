@@ -1,0 +1,5 @@
+1 - Walking
+2 - Walking Up
+3 - Walking Down
+4 - Sitting
+5 - Standing

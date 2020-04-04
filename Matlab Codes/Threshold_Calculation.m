@@ -1,6 +1,6 @@
 clear;
 %CSV_file = csvread("Dataset/Train/walking.csv");
-CSV_file = csvread("Dataset/Test/test.csv");
+CSV_file = csvread("Dataset/WithSeq/indoor1.csv");
 Time  = CSV_file(:,1);
 RSSI  = CSV_file(:,2);
 Acc_x = CSV_file(:,3);
@@ -37,7 +37,7 @@ hold off
 figure(2)
 plot(Smooth_Acc);
 hold on
-plot(Smooth_Acc);
+plot(Acc_Mag);
 legend('After smoothening','Before Smoothening')
 title('Acceleration magnitude Smoothening')
 hold off
@@ -130,6 +130,9 @@ for itr=s:1:e
     end
 end
 avg = sum/(count-1);
+if isnan(avg)
+    avg = mean(Smooth_RSSI); 
+end
 
     
 end
