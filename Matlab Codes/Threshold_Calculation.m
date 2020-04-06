@@ -1,46 +1,37 @@
-clear;
+
 %CSV_file = csvread("Dataset/Train/walking.csv");
-CSV_file = csvread("Dataset/WithSeq/indoor1.csv");
+%CSV_file = csvread("Dataset/WithSeq/indoor1.csv");
+CSV_file = Sit_pred;
 Time  = CSV_file(:,1);
 RSSI  = CSV_file(:,2);
-Acc_x = CSV_file(:,3);
-Acc_y = CSV_file(:,4);
-Acc_z = CSV_file(:,5);
+
 
 
 Total_samples = size(Time);
-Acc_Mag = zeros(Total_samples(1,1),1);
-
-
-%Calculating Accleration magnitude from Acc_X,Acc_Y,Acc_Z
-for itr = 1:Total_samples(1,1)
-    sum = (Acc_x(itr,1)^2)+(Acc_y(itr,1)^2)+(Acc_z(itr,1)^2);
-    Acc_Mag(itr,1) = sum^0.5;
-end
 
 %Signal smoothening with Savitzky-Golay filtering.Polynomial order = 6 and
 %framelength = 21
 Smooth_RSSI = sgolayfilt(RSSI,6,21);
-Smooth_Acc  = sgolayfilt(Acc_Mag,6,21);
+Smooth_Acc  = CSV_file(:,3);
 
 
 %RSSI visualization
-figure(1)
-plot(Smooth_RSSI);
-hold on
-plot(RSSI);
-legend('After smoothening','Before Smoothening')
-title('RSSI Smoothening')
-hold off
+% figure(1)
+% plot(Smooth_RSSI);
+% hold on
+% plot(RSSI);
+% legend('After smoothening','Before Smoothening')
+% title('RSSI Smoothening')
+% hold off
 
 %Accleration magnitude visualization
-figure(2)
-plot(Smooth_Acc);
-hold on
-plot(Acc_Mag);
-legend('After smoothening','Before Smoothening')
-title('Acceleration magnitude Smoothening')
-hold off
+% figure(2)
+% plot(Smooth_Acc);
+% hold on
+% plot(Acc_Mag);
+% legend('After smoothening','Before Smoothening')
+% title('Acceleration magnitude Smoothening')
+% hold off
 
 %Smoothened Acc and RSSI visualization
 figure(3)
