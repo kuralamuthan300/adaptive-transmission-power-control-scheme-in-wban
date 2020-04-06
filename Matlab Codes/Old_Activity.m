@@ -1,8 +1,9 @@
 clear;
-CSV_file = csvread("Dataset/WithSeq/indoor1.csv");
+CSV_file = csvread("Dataset/WithoutSeq/test.csv");
+
 numFeatures = 6;
-numHiddenUnits = 50;
-numClasses = 5;
+numHiddenUnits = 150;
+numClasses = 6;
 
 layers = [ 
     sequenceInputLayer(numFeatures)
@@ -18,7 +19,7 @@ clear numHiddenUnits;
 clear numClasses;
 
 maxEpochs = 10;
-miniBatchSize = 10;
+miniBatchSize = 20;
 
 options = trainingOptions('adam', ...
     'ExecutionEnvironment','cpu', ...
@@ -37,11 +38,15 @@ walking_up = magic(0);
 walking_down = magic(0);
 sitting = magic(0);
 standing = magic(0);
+jogging = magic(0);
 for a = 1:total_samples(1,1)
    row = CSV_file(a,:);
    inertial_values=row(3:8);
-   label=row(10);
+   label=row(9);
    
+    if label == 0
+        standing= [standing;inertial_values];
+    end
     if label == 1
     walking = [walking;inertial_values];
     end
@@ -55,13 +60,19 @@ for a = 1:total_samples(1,1)
         sitting= [sitting;inertial_values];
     end
     if label == 5
-        standing= [standing;inertial_values];
+        jogging= [jogging;inertial_values];
     end
+    
 end
 
 clear a;
 Xtrain = cell(0,0);
-Xtrain = {transpose(walking);transpose(walking_up);transpose(walking_down);transpose(sitting);transpose(standing)};
+Xtrain = {transpose(walking);transpose(walking_up);transpose(walking_down);transpose(sitting);transpose(standing);transpose(jogging)};
+
+stand_label = zeros(1,getSize(standing));
+for i = 1 : size(standing)
+  stand_label(i) = 0;
+end
 
 Wal_label = zeros(1,getSize(walking));
 for i = 1 : size(walking)
@@ -83,9 +94,9 @@ for i = 1 : size(sitting)
   sit_label(i) = 4;
 end
 
-stand_label = zeros(1,getSize(standing));
-for i = 1 : size(standing)
-  stand_label(i) = 5;
+jogg_label = zeros(1,getSize(jogging));
+for i = 1 : size(jogging)
+  jogg_label(i) = 5;
 end
 %c = row1;
 %c = [cell; row2]
@@ -108,13 +119,11 @@ Walup_label = categorical(Walup_label);
 Waldown_label = categorical(Waldown_label);
 sit_label = categorical(sit_label);
 stand_label = categorical(stand_label);
+jogg_label = categorical(jogg_label);
 
-Ytrain={Wal_label;Walup_label;Waldown_label;sit_label;stand_label};
+Ytrain={Wal_label;Walup_label;Waldown_label;sit_label;stand_label;jogg_label};
 
 net = trainNetwork(Xtrain,Ytrain,layers,options);
-Ypred = classify( net, transpose(CSV_file(:,[3:8])));
-Ypred = double(Ypred);
-
 
 
 
