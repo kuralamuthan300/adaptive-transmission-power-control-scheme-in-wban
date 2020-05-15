@@ -19,6 +19,8 @@ static XBeeDataStruct XBeeData;
 typedef struct AckStruct {
   boolean flag = false;
 } AckPacketStruct;
+
+
 static AckPacketStruct AckData;
 Rx16Response rx16 = Rx16Response();
 uint8_t* data = 0;
@@ -120,7 +122,7 @@ void loop()
             AckData = (AckPacketStruct &)*data;
             if(AckData.flag == true)
             {
-              int lastRSSI = -1*rx16.getRssi();
+              lastRSSI = -1*rx16.getRssi();
             }
         }
     }

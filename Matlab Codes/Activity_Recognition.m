@@ -1,13 +1,13 @@
 clear;
 %Training file
-CSV_file = preprocessor(csvread("Dataset/WithSeq/indoor1.csv"));
+CSV_file = preprocessor(csvread("Dataset/WithSeq/indoor1.csv"),1);
 %Test file
-CSV_file_pred = preprocessor(csvread("Dataset/WithSeq/indoor1.csv"));
+CSV_file_pred = preprocessor(csvread("Dataset/WithSeq/outdoor1.csv"),2);
 
 total_samples = size(CSV_file);
 
 % numFeatures = 4;
-numHiddenUnits = 100;
+numHiddenUnits = 30;
 numClasses = 5;
 
 % layers = [ 
@@ -23,10 +23,10 @@ layers = [ ...
     lstmLayer(numHiddenUnits,'OutputMode','sequence')
     fullyConnectedLayer(numClasses)
     softmaxLayer
-    classificationLayer]
+    classificationLayer];
 
- maxEpochs = 70;
- miniBatchSize = 10;
+ maxEpochs = 15;
+ miniBatchSize = 5;
 
 %  options = trainingOptions('adam', ...
 %      'ExecutionEnvironment','cpu', ...
@@ -38,9 +38,9 @@ layers = [ ...
 %      'Verbose',0, ...
 %     'Plots','training-progress');
 
-options = trainingOptions('sgdm', ...
+options = trainingOptions('adam', ...
     'ExecutionEnvironment','cpu', ...
-    'GradientThreshold',1, ...
+    'GradientThreshold',0.001, ...
     'MaxEpochs',maxEpochs, ...
     'MiniBatchSize',miniBatchSize, ...
     'SequenceLength','longest', ...
@@ -201,7 +201,7 @@ noofsamples=s(1,1);
 end
 
 
-function file = preprocessor(CSV_file)
+function file = preprocessor(CSV_file,var)
 Acc_x = CSV_file(:,3);
 Acc_y = CSV_file(:,4);
 Acc_z = CSV_file(:,5);
@@ -219,12 +219,16 @@ end
 Acc_Mag=sgolayfilt(Acc_Mag,6,21);
 
 left  = CSV_file(:,[1:2]);
+if var == 1
 right = CSV_file(:,[6:10]);
+else
+right = CSV_file(:,[6:9]);
+end
+
 
 file = left;
 file = [file Acc_Mag];
 file = [file right];
-
 
 
 end
