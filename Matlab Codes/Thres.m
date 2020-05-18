@@ -137,21 +137,18 @@ Ypred = transpose(Ypred);
 
 Xtest = transpose(Xtest);
 
-
-
-
 %%Threshold calculator
 
 clear;
 
-RSSI = CSV_file_pred(:,2);
+RSSI = CSV_file_pred(:, 2);
 label = Ypred;
 len = size(RSSI);
 len = len(1, 1);
 
 %Acc=sgolayfilt(Acc_Mag,6,21);
-RSSI=sgolayfilt(RSSI,6,21);
-Acc = Xtest(:,1);
+RSSI = sgolayfilt(RSSI, 6, 21);
+Acc = Xtest(:, 1);
 %walking
 Acc_walk = [];
 RSSI_walk = [];
