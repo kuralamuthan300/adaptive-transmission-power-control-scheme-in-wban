@@ -124,6 +124,9 @@ for itr = 1:len
 end
 
 
+
+
+
 %global minimum algorithm
 function index = g_min(Array,s)
     min = 1000;
