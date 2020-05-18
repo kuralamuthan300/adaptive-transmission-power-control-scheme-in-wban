@@ -1,24 +1,157 @@
 clear;
-Acc_X = randi([-250, 250], [2000, 1]);
-Acc_Y = randi([-250, 250], [2000, 1]);
-Acc_Z = randi([-250, 250], [2000, 1]);
-RSSI = randi([20, 70], [2000, 1]);
-label = randi([1, 5], [2000, 1]);
-RSSI = RSSI.*(-1);
-len = size(Acc_X);
-len = len(1, 1);
+%Training file
+CSV_file = preprocessor(csvread("Dataset/WithSeq/indoor1.csv"), 1);
+%Test file
+CSV_file_pred = preprocessor(csvread("Dataset/WithSeq/outdoor1.csv"), 2);
 
-%Calculating Accleration magnitude from Acc_X,Acc_Y,Acc_Z
-Acc_Mag = [];
+total_samples = size(CSV_file);
 
-for itr = 1:len
-    sum = (Acc_X(itr, 1)^2) + (Acc_Y(itr, 1)^2) + (Acc_Z(itr, 1)^2);
-    Acc_Mag(itr, 1) = sum^0.5;
+% numFeatures = 4;
+numHiddenUnits = 30;
+numClasses = 5;
+
+% layers = [
+%     sequenceInputLayer(numFeatures)
+%     lstmLayer(numHiddenUnits,'OutputMode','sequence')
+%     fullyConnectedLayer(numClasses)
+%     softmaxLayer
+%     classificationLayer];
+
+layers = [...
+        sequenceInputLayer(4)
+    lstmLayer(numHiddenUnits, 'OutputMode', 'sequence')
+    fullyConnectedLayer(numClasses)
+    softmaxLayer
+    classificationLayer];
+
+maxEpochs = 15;
+miniBatchSize = 5;
+
+%  options = trainingOptions('adam', ...
+%      'ExecutionEnvironment','cpu', ...
+%      'GradientThreshold',1, ...
+%      'MaxEpochs',maxEpochs, ...
+%      'MiniBatchSize',miniBatchSize, ...
+%      'SequenceLength','longest', ...
+%      'Shuffle','never', ...
+%      'Verbose',0, ...
+%     'Plots','training-progress');
+
+options = trainingOptions('adam', ...
+    'ExecutionEnvironment', 'cpu', ...
+    'GradientThreshold', 0.001, ...
+    'MaxEpochs', maxEpochs, ...
+    'MiniBatchSize', miniBatchSize, ...
+    'SequenceLength', 'longest', ...
+    'Shuffle', 'never', ...
+    'Verbose', 0, ...
+    'Plots', 'training-progress');
+
+walking = magic(0);
+walking_up = magic(0);
+walking_down = magic(0);
+sitting = magic(0);
+standing = magic(0);
+
+for a = 1:total_samples(1, 1)
+    row = CSV_file(a, :);
+    inertial_values = row(3:6);
+    label = row(8);
+
+    if label == 1
+        walking = [walking; inertial_values];
+    end
+
+    if label == 2
+        walking_up = [walking_up; inertial_values];
+    end
+
+    if label == 3
+        walking_down = [walking_down; inertial_values];
+    end
+
+    if label == 4
+        sitting = [sitting; inertial_values];
+    end
+
+    if label == 5
+        standing = [standing; inertial_values];
+    end
+
 end
 
+clear row;
+
+Xtrain = cell(0, 0);
+Xtrain = {transpose(walking); transpose(walking_up); transpose(walking_down); transpose(sitting); transpose(standing)};
+
+Wal_label = zeros(1, getSize(walking));
+
+for i = 1:size(walking)
+    Wal_label(i) = 1;
+end
+
+Walup_label = zeros(1, getSize(walking_up));
+
+for i = 1:size(walking_up)
+    Walup_label(i) = 2;
+end
+
+Waldown_label = zeros(1, getSize(walking_down));
+
+for i = 1:size(walking_down)
+    Waldown_label(i) = 3;
+end
+
+sit_label = zeros(1, getSize(sitting));
+
+for i = 1:size(sitting)
+    sit_label(i) = 4;
+end
+
+stand_label = zeros(1, getSize(standing));
+
+for i = 1:size(standing)
+    stand_label(i) = 5;
+end
+
+%c = row1;
+%c = [cell; row2]
+
+Wal_label = categorical(Wal_label);
+Walup_label = categorical(Walup_label);
+Waldown_label = categorical(Waldown_label);
+sit_label = categorical(sit_label);
+stand_label = categorical(stand_label);
+
+Ytrain = {Wal_label; Walup_label; Waldown_label; sit_label; stand_label};
+
+%Model training
+net = trainNetwork(Xtrain, Ytrain, layers, options);
+
+%Activity classification
+Xtest = transpose(CSV_file_pred(:, [3:6]));
+Ypred = classify(net, Xtest);
+Ypred = double(Ypred);
+Ypred = transpose(Ypred);
+
+Xtest = transpose(Xtest);
+
+
+
+
+%%Threshold calculator
+
+clear;
+
+RSSI = CSV_file_pred(:,2);
+label = Ypred;
+len = size(RSSI);
+len = len(1, 1);
+
 %Acc=sgolayfilt(Acc_Mag,6,21);
-%RSSI=sgolayfilt(RSSI,6,21);
-Acc = Acc_Mag;
+RSSI=sgolayfilt(RSSI,6,21);
+Acc = Xtest(:,1);
 %walking
 Acc_walk = [];
 RSSI_walk = [];
@@ -45,10 +178,9 @@ size_walk_down = 0;
 
 %siting
 Acc_sitting = [];
-RSSI_sitting = [];  
+RSSI_sitting = [];
 Last_thres_sitting = -40;
 Threshold_sitting = [-40];
-
 
 %standing
 
@@ -56,7 +188,6 @@ Acc_standing = [];
 RSSI_standing = [];
 Last_thres_standing = -40;
 Threshold_standing = [-40];
-
 
 for itr = 1:len
 
@@ -151,7 +282,7 @@ for itr = 1:len
             sum_RSSI = 0;
             count = 0;
 
-            for idx = size_arr-9:size_arr
+            for idx = size_arr - 9:size_arr
                 sum_RSSI = sum_RSSI + RSSI_sitting(idx, 1);
                 count = count + 1;
             end
@@ -163,7 +294,7 @@ for itr = 1:len
 
     elseif (label(itr, 1) == 5)
         Acc_standing = [Acc_standing; Acc(itr, 1)];
-        RSSI_standing = [RSSI_standing ; RSSI(itr, 1)];
+        RSSI_standing = [RSSI_standing; RSSI(itr, 1)];
         size_arr = size(Acc_standing);
         size_arr = size_arr(1, 1);
 
@@ -171,7 +302,7 @@ for itr = 1:len
             sum_RSSI = 0;
             count = 0;
 
-            for idx = size_arr-9:size_arr
+            for idx = size_arr - 9:size_arr
                 sum_RSSI = sum_RSSI + RSSI_standing(idx, 1);
                 count = count + 1;
             end
@@ -223,5 +354,42 @@ function avg = threshold_calc(Smooth_RSSI, local_max_RSSI, s)
     if isnan(avg)
         avg = mean(Smooth_RSSI);
     end
+
+end
+
+function noofsamples = getSize(activity)
+
+    s = size(activity);
+    noofsamples = s(1, 1);
+
+end
+
+function file = preprocessor(CSV_file, var)
+    Acc_x = CSV_file(:, 3);
+    Acc_y = CSV_file(:, 4);
+    Acc_z = CSV_file(:, 5);
+
+    total_samples = size(CSV_file);
+    Acc_Mag = zeros(total_samples(1, 1), 1);
+
+    %Calculating Accleration magnitude from Acc_X,Acc_Y,Acc_Z
+    for itr = 1:total_samples(1, 1)
+        sum = (Acc_x(itr, 1)^2) + (Acc_y(itr, 1)^2) + (Acc_z(itr, 1)^2);
+        Acc_Mag(itr, 1) = sum^0.5;
+    end
+
+    Acc_Mag = sgolayfilt(Acc_Mag, 6, 21);
+
+    left = CSV_file(:, [1:2]);
+
+    if var == 1
+        right = CSV_file(:, [6:10]);
+    else
+        right = CSV_file(:, [6:9]);
+    end
+
+    file = left;
+    file = [file Acc_Mag];
+    file = [file right];
 
 end
