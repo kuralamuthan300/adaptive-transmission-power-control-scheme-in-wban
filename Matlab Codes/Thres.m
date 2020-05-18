@@ -140,7 +140,6 @@ Xtest = transpose(Xtest);
 
 %%Threshold calculator
 
-clear;
 
 RSSI = CSV_file_pred(:, 2);
 label = Ypred;
@@ -320,7 +319,7 @@ sum_of_Thres_Arrays_size = getSize(Threshold_walk)+getSize(Threshold_walk_up)+ge
 Average_TPL = sum_of_TPL/sum_of_Thres_Arrays_size;
 %TPL
 function ans = TPL_calc(Array)
-
+    ans=0;
     for itr = 1:size(Array, 1)
         value = Array(itr, 1);
 
