@@ -35,6 +35,7 @@ miniBatchSize = 5;
 %      'SequenceLength','longest', ...
 %      'Shuffle','never', ...
 %      'Verbose',0, ...
+%      'GradientThreshold',1, ...
 %     'Plots','training-progress');
 
 options = trainingOptions('adam', ...
@@ -312,6 +313,33 @@ for itr = 1:len
 
 end
 
+%average power level
+%10-26 = -5 ; 27-43 = -1 ; 44-59 = 1;60-75 = 3;76-91 =5;
+sum_of_TPL = TPL_calc(Threshold_walk) + TPL_calc(Threshold_walk_up) + TPL_calc(Threshold_walk_down) + TPL_calc(Threshold_sitting) + TPL_calc(Threshold_standing);
+sum_of_Thres_Arrays_size = getSize(Threshold_walk)+getSize(Threshold_walk_up)+getSize(Threshold_walk_down)+getSize(Threshold_standing)+getSize(Threshold_sitting);
+Average_TPL = sum_of_TPL/sum_of_Thres_Arrays_size;
+%TPL
+function ans = TPL_calc(Array)
+
+    for itr = 1:size(Array, 1)
+        value = Array(itr, 1);
+
+        if (value <= 26)
+            ans = ans - 5;
+        elseif (value >= 27 && value <= 43)
+            ans = ans - 1;
+        elseif (value >= 44 && value <= 59)
+            ans = ans + 0;
+        elseif (value >= 60 && value <= 75)
+            ans = ans + 1;
+        elseif (value >= 76)
+            ans = ans + 5;
+        end
+
+    end
+
+end
+
 %global minimum algorithm
 function index = g_min(Array, s)
     min = 1000;
@@ -355,10 +383,8 @@ function avg = threshold_calc(Smooth_RSSI, local_max_RSSI, s)
 end
 
 function noofsamples = getSize(activity)
-
     s = size(activity);
     noofsamples = s(1, 1);
-
 end
 
 function file = preprocessor(CSV_file, var)
