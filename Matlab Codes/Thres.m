@@ -4,7 +4,7 @@ Acc_Y = randi([-250, 250], [2000, 1]);
 Acc_Z = randi([-250, 250], [2000, 1]);
 RSSI = randi([20, 70], [2000, 1]);
 label = randi([1, 5], [2000, 1]);
-
+RSSI = RSSI.*(-1);
 len = size(Acc_X);
 len = len(1, 1);
 
@@ -45,7 +45,7 @@ size_walk_down = 0;
 
 %siting
 Acc_sitting = [];
-RSSI_sitting = [];
+RSSI_sitting = [];  
 Last_thres_sitting = -40;
 Threshold_sitting = [-40];
 
