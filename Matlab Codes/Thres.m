@@ -135,11 +135,9 @@ Xtest = transpose(CSV_file_pred(:, [3:6]));
 Ypred = classify(net, Xtest);
 Ypred = double(Ypred);
 Ypred = transpose(Ypred);
-
 Xtest = transpose(Xtest);
 
 %%Threshold calculator
-
 
 RSSI = CSV_file_pred(:, 2);
 label = Ypred;
@@ -156,6 +154,7 @@ Last_thres_walk = -40;
 Threshold_walk = [-40];
 Global_min_walk = [1];
 size_walk = 0;
+lqe_walk = [];
 
 %walking_up
 Acc_walk_up = [];
@@ -164,6 +163,7 @@ Last_thres_walk_up = -40;
 Threshold_walk_up = [-40];
 Global_min_walk_up = [1];
 size_walk_up = 0;
+lqe_walk_up = [];
 
 %walking_down
 Acc_walk_down = [];
@@ -172,6 +172,7 @@ Last_thres_walk_down = -40;
 Threshold_walk_down = [-40];
 Global_min_walk_down = [1];
 size_walk_down = 0;
+lqe_walk_down = [];
 
 %siting
 Acc_sitting = [];
@@ -202,6 +203,9 @@ for itr = 1:len
                 g_idx = g_min(Acc_walk, prev_gmin);
                 Last_thres_walk = threshold_calc(RSSI_walk, islocalmax(RSSI_walk), prev_gmin);
 
+                lqe = link_quality(Acc_walk, prev_gmin, g_idx);
+                lqe_walk = [lqe_walk, lqe];
+
                 Global_min_walk = [Global_min_walk; g_idx];
                 Threshold_walk = [Threshold_walk; Last_thres_walk];
                 clear temp;
@@ -229,6 +233,9 @@ for itr = 1:len
                 g_idx = g_min(Acc_walk_up, prev_gmin);
                 Last_thres_walk_up = threshold_calc(RSSI_walk_up, islocalmax(RSSI_walk_up), prev_gmin);
 
+                lqe = link_quality(Acc_walk_up, prev_gmin, g_idx);
+                lqe_walk_up = [lqe_walk_up, lqe];
+
                 Global_min_walk_up = [Global_min_walk_up; g_idx];
                 Threshold_walk_up = [Threshold_walk_up; Last_thres_walk_up];
                 clear temp;
@@ -255,6 +262,9 @@ for itr = 1:len
                 prev_gmin = Global_min_walk_down(temp, 1);
                 g_idx = g_min(Acc_walk_down, prev_gmin);
                 Last_thres_walk_down = threshold_calc(RSSI_walk_down, islocalmax(RSSI_walk_down), prev_gmin);
+
+                lqe = link_quality(Acc_walk_down, prev_gmin, g_idx);
+                lqe_walk = [lqe_walk_down, lqe];
 
                 Global_min_walk_down = [Global_min_walk_down; g_idx];
                 Threshold_walk_down = [Threshold_walk_down; Last_thres_walk_down];
@@ -315,11 +325,12 @@ end
 %average power level
 %10-26 = -5 ; 27-43 = -1 ; 44-59 = 1;60-75 = 3;76-91 =5;
 sum_of_TPL = TPL_calc(Threshold_walk) + TPL_calc(Threshold_walk_up) + TPL_calc(Threshold_walk_down) + TPL_calc(Threshold_sitting) + TPL_calc(Threshold_standing);
-sum_of_Thres_Arrays_size = getSize(Threshold_walk)+getSize(Threshold_walk_up)+getSize(Threshold_walk_down)+getSize(Threshold_standing)+getSize(Threshold_sitting);
-Average_TPL = sum_of_TPL/sum_of_Thres_Arrays_size;
+sum_of_Thres_Arrays_size = getSize(Threshold_walk) + getSize(Threshold_walk_up) + getSize(Threshold_walk_down) + getSize(Threshold_standing) + getSize(Threshold_sitting);
+Average_TPL = sum_of_TPL / sum_of_Thres_Arrays_size;
 %TPL
 function ans = TPL_calc(Array)
-    ans=0;
+    ans = 0;
+
     for itr = 1:size(Array, 1)
         value = Array(itr, 1);
 
@@ -413,5 +424,37 @@ function file = preprocessor(CSV_file, var)
     file = left;
     file = [file Acc_Mag];
     file = [file right];
+
+end
+
+function lqe = link_quality(Array, s, e)
+    Array = transpose(Array);
+    numerator = (e - s) / 10;
+    localMax = islocalmax(Array);
+    first_maxima = 0;
+    last_maxima = 0;
+
+    for itr = s + 1:e - 1
+
+        if localMax(itr) == 1
+            first_maxima = itr;
+            break
+        end
+
+    end
+
+    for itr = e - 1:-1:s + 1
+
+        if localMax(itr) == 1
+            last_maxima = itr;
+        end
+
+    end
+
+    if last_maxima - first_maxima ~= 0
+        lqe = numerator / ((last_maxima - first_maxima) / 10);
+    else
+        lqe = 0;
+    end
 
 end
