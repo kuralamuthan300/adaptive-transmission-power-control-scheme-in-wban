@@ -187,6 +187,9 @@ RSSI_standing = [];
 Last_thres_standing = -40;
 Threshold_standing = [-40];
 
+%TPL array
+TPL = [-5];
+
 for itr = 1:len
 
     if (label(itr, 1) == 1)
@@ -202,6 +205,9 @@ for itr = 1:len
                 prev_gmin = Global_min_walk(temp, 1);
                 g_idx = g_min(Acc_walk, prev_gmin);
                 Last_thres_walk = threshold_calc(RSSI_walk, islocalmax(RSSI_walk), prev_gmin);
+
+                temp_tpl = ((RSSI(g_idx, 1) + RSSI(prev_gmin, 1))/2)+Last_thres_walk;
+                TPL=[TPL;temp_tpl];
 
                 lqe = link_quality(Acc_walk, prev_gmin, g_idx);
                 lqe_walk = [lqe_walk, lqe];
@@ -233,6 +239,11 @@ for itr = 1:len
                 g_idx = g_min(Acc_walk_up, prev_gmin);
                 Last_thres_walk_up = threshold_calc(RSSI_walk_up, islocalmax(RSSI_walk_up), prev_gmin);
 
+
+                temp_tpl = ((RSSI(g_idx, 1) + RSSI(prev_gmin, 1))/2)+Last_thres_walk_up;
+                TPL=[TPL;temp_tpl];
+
+
                 lqe = link_quality(Acc_walk_up, prev_gmin, g_idx);
                 lqe_walk_up = [lqe_walk_up, lqe];
 
@@ -263,6 +274,9 @@ for itr = 1:len
                 g_idx = g_min(Acc_walk_down, prev_gmin);
                 Last_thres_walk_down = threshold_calc(RSSI_walk_down, islocalmax(RSSI_walk_down), prev_gmin);
 
+                temp_tpl = ((RSSI(g_idx, 1) + RSSI(prev_gmin, 1))/2)+Last_thres_walk_down;
+                TPL=[TPL;temp_tpl];
+
                 lqe = link_quality(Acc_walk_down, prev_gmin, g_idx);
                 lqe_walk = [lqe_walk_down, lqe];
 
@@ -285,16 +299,18 @@ for itr = 1:len
         size_arr = size(Acc_sitting);
         size_arr = size_arr(1, 1);
 
-        if (size_arr > 10)
+        if (size_arr > 4)
             sum_RSSI = 0;
             count = 0;
 
-            for idx = size_arr - 9:size_arr
+            for idx = size_arr - 4:size_arr
                 sum_RSSI = sum_RSSI + RSSI_sitting(idx, 1);
                 count = count + 1;
             end
 
             Last_thres_sitting = sum_RSSI / count;
+            TPL = [TPL;Last_thres_sitting];
+
             Threshold_sitting = [Threshold_sitting; Last_thres_sitting];
 
         end
@@ -305,16 +321,17 @@ for itr = 1:len
         size_arr = size(Acc_standing);
         size_arr = size_arr(1, 1);
 
-        if (size_arr > 10)
+        if (size_arr > 5)
             sum_RSSI = 0;
             count = 0;
 
-            for idx = size_arr - 9:size_arr
+            for idx = size_arr - 4:size_arr
                 sum_RSSI = sum_RSSI + RSSI_standing(idx, 1);
                 count = count + 1;
             end
 
             Last_thres_standing = sum_RSSI / count;
+            TPL = [TPL;Last_thres_standing];
             Threshold_standing = [Threshold_standing; Last_thres_standing];
         end
 
@@ -322,33 +339,10 @@ for itr = 1:len
 
 end
 
-%average power level
-%10-26 = -5 ; 27-43 = -1 ; 44-59 = 1;60-75 = 3;76-91 =5;
-sum_of_TPL = TPL_calc(Threshold_walk) + TPL_calc(Threshold_walk_up) + TPL_calc(Threshold_walk_down) + TPL_calc(Threshold_sitting) + TPL_calc(Threshold_standing);
-sum_of_Thres_Arrays_size = getSize(Threshold_walk) + getSize(Threshold_walk_up) + getSize(Threshold_walk_down) + getSize(Threshold_standing) + getSize(Threshold_sitting);
-Average_TPL = sum_of_TPL / sum_of_Thres_Arrays_size;
-%TPL
-function ans = TPL_calc(Array)
-    ans = 0;
 
-    for itr = 1:size(Array, 1)
-        value = Array(itr, 1);
 
-        if (value <= 26)
-            ans = ans - 5;
-        elseif (value >= 27 && value <= 43)
-            ans = ans - 1;
-        elseif (value >= 44 && value <= 59)
-            ans = ans + 0;
-        elseif (value >= 60 && value <= 75)
-            ans = ans + 1;
-        elseif (value >= 76)
-            ans = ans + 5;
-        end
+Average_TPL = mean(transpose(TPL));
 
-    end
-
-end
 
 %global minimum algorithm
 function index = g_min(Array, s)
