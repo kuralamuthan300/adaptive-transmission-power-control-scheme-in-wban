@@ -26,26 +26,37 @@ clear acc_z;
 
 %acc = sgolayfilt(acc, 6, 21);
 
-g_min_idx = [];
+dynamic_points = [];
+static_points = [];
 
 for itr = 1:30:no_of_packets
 
     if (itr + 29 <= no_of_packets)
-        g_min_idx = [g_min_idx, g_min(acc, itr, itr + 29)];
+        a = g_min(acc, itr, itr + 29);
+
+        if (is_static(acc, a))
+            static_points = [static_points, a];
+        else
+            dynamic_points = [dynamic_points, a];
+        end
+
     else
-        g_min_idx = [g_min_idx, g_min(acc, itr, no_of_packets)];
+        a = g_min(acc, itr, no_of_packets);
+
+        if (is_static(acc, a))
+            static_points = [static_points, a];
+        else
+            dynamic_points = [dynamic_points, a];
+        end
+
     end
 
 end
 
-%Adding first and last packets as two end points
-g_min_idx = [1, g_min_idx];
-g_min_idx = [g_min_idx, no_of_packets];
-
-
 clear itr;
 clear csv_file;
-% Global max between s and e
+
+% Global min between s and e
 function index = g_min(Array, s, e)
     min = 1000;
 
@@ -54,6 +65,30 @@ function index = g_min(Array, s, e)
         if (min > Array(itr, 1))
             min = Array(itr, 1);
             index = itr;
+        end
+
+    end
+
+end
+
+function s = is_static(array, idx)
+    s = false;
+    localmax_acc = islocalmax(array);
+
+    for itr = idx - 1:-1:1
+
+        if (localmax_acc(itr, 1) == 1)
+            mid_point = (array(idx, 1) + array(itr, 1)) / 2;
+            diff_val = abs(mid_point - array(idx, 1));
+
+            if (diff_val < 0.0070)
+                s = true;
+%                 disp("diff : ");
+%                 disp(diff_val);
+%                 disp("idx : ");
+%                 disp(idx);
+            end
+
         end
 
     end
