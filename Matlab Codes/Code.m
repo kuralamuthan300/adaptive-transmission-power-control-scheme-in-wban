@@ -35,26 +35,49 @@ for itr = 1:30:no_of_packets
         a = g_min(acc, itr, itr + 29);
 
         if (is_static(acc, a))
-            static_points = [static_points, a];
+            static_points = [static_points; a];
         else
-            dynamic_points = [dynamic_points, a];
+            dynamic_points = [dynamic_points; a];
         end
 
     else
         a = g_min(acc, itr, no_of_packets);
 
         if (is_static(acc, a))
-            static_points = [static_points, a];
+            static_points = [static_points; a];
         else
-            dynamic_points = [dynamic_points, a];
+            dynamic_points = [dynamic_points; a];
         end
 
     end
 
 end
 
+if (dynamic_points(1, 1) < static_points(1, 1))
+    dynamic_points = [1; dynamic_points];
+else
+    static_points = [1; static_points];
+end
+
+size_dynamic = size(dynamic_points);
+size_dynamic = size_dynamic(1, 1);
+
+size_static = size(static_points);
+size_static = size_static(1, 1);
+
+if (dynamic_points(size_dynamic, 1) > static_points(size_static, 1))
+    dynamic_points = [dynamic_points; no_of_packets];
+else
+    static_points = [static_points; no_of_packets];
+end
+
+clear size_dynamic;
+clear size_static;
 clear itr;
 clear csv_file;
+
+static_ptr = 1;
+dynamic_ptr = 1;
 
 % Global min between s and e
 function index = g_min(Array, s, e)
@@ -83,10 +106,6 @@ function s = is_static(array, idx)
 
             if (diff_val <= 0.0100)
                 s = true;
-                %                 disp("diff : ");
-                %                 disp(diff_val);
-                %                 disp("idx : ");
-                %                 disp(idx);
                 break;
             end
 
