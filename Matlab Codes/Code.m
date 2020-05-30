@@ -2,7 +2,7 @@ csv_file = csvread("Dataset/indoor_1.CSV");
 %csv_file = csvread("Dataset/indoor_2.CSV");
 %csv_file = csvread("Dataset/outdoor_1.CSV");
 %csv_file = csvread("Dataset/outdoor_2.CSV");
-
+tpl = [-5; -1; 1; 3; 5];
 rssi = csv_file(:, 2);
 %rssi = sgolayfilt(rssi, 6, 21);
 
@@ -71,13 +71,79 @@ else
     static_points = [static_points; no_of_packets];
 end
 
+static_ptr = 1;
+dynamic_ptr = 1;
+ptr = 0;
+s = 0;
+d = 0;
+
+if (static_points(1, 1) < dynamic_points(1, 1))
+    ptr = static_ptr;
+    static_ptr = static_ptr + 1;
+    s = 1;
+else
+    ptr = dynamic_ptr;
+    dynamic_ptr = dynamic_ptr + 1;
+    d = 1;
+end
+
+bcqt = []; %best channel quality time
+tpl_used = [-5]; %tpl used
+threshold_rssi = [-65];
+
+while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
+
+    if (static_points(static_ptr, 1) < dynamic_points(dynamic_ptr, 1))
+        next_point = static_points(static_ptr, 1);
+
+        if (s == 1)
+
+        else
+            d = 0;
+            s = 1;
+        end
+
+        ptr = static_ptr;
+        static_ptr = static_ptr + 1;
+
+    else
+        next_point = dynamic_points(dynamic_ptr, 1);
+
+        if (d == 1)
+            %Best Channel Quality time
+            bcqt = [bcqt; cqt(rssi, ptr, next_point)];
+            %New threshold RSSI
+            curr_thres = threshold_calculator(rssi, ptr, next_point);
+            %Current RSSI Range
+            crr = ((rssi(ptr, 1) + rssi(next_point, 1)) / 2) + curr_thres;
+            %Current TPL
+            current_tpl = tpl_used(size(tpl_used));
+            %Previous Threshold
+            prev_thres = threshold_rssi(size(threshold_rssi));
+            %New TPL
+            new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
+
+            tpl_used = [tpl_used, new_tpl];
+            threshold_rssi = [threshold_rssi; curr_thres];
+        else
+            d = 1;
+            s = 0;
+        end
+
+        ptr = dynamic_ptr;
+        dynamic_ptr = dynamic_ptr + 1;
+
+    end
+
+end
+
 clear size_dynamic;
 clear size_static;
 clear itr;
 clear csv_file;
-
-static_ptr = 1;
-dynamic_ptr = 1;
+clear a;
+clear dynamic_ptr;
+clear static_ptr;
 
 % Global min between s and e
 function index = g_min(Array, s, e)
@@ -109,6 +175,83 @@ function s = is_static(array, idx)
                 break;
             end
 
+        end
+
+    end
+
+end
+
+%cqt - Best channel quality time
+function lqe = cqt(Array, s, e)
+    Array = transpose(Array);
+    numerator = (e - s) / 10;
+    localMax = islocalmax(Array);
+    first_maxima = 0;
+    last_maxima = 0;
+
+    for itr = s + 1:e - 1
+
+        if localMax(itr) == 1
+            first_maxima = itr;
+            break
+        end
+
+    end
+
+    for itr = e - 1:-1:s + 1
+
+        if localMax(itr) == 1
+            last_maxima = itr;
+        end
+
+    end
+
+    lqe = numerator / ((last_maxima - first_maxima) / 10);
+end
+
+function thres = threshold_calculator(Array, s, e)
+    Array = transpose(Array);
+    lmax = islocalmax(Array);
+    count = 0;
+    sum = 0;
+
+    for itr = s:e;
+
+        if (lmax(itr) == 1)
+            sum = sum + Array(itr);
+            count = count + 1;
+        end
+
+    end
+
+    thres = sum / count;
+end
+
+function tpower = change_tpl(current_tpl, rssi_range, threshold, all_tpl)
+    all_tpl = transpose(all_tpl);
+    idx = 0;
+    for itr = 1:5
+
+        if (all_tpl(itr) == current_tpl)
+            idx = itr;
+        end
+
+    end
+
+    if (rssi_range > threshold)
+
+        if (idx - 1 < 1)
+            tpower = current_tpl;
+        else
+            tpower = all_tpl(idx - 1);
+        end
+
+    else
+
+        if (idx + 1 > 5)
+            tpower = current_tpl;
+        else
+            tpower = all_tpl(idx + 1);
         end
 
     end
