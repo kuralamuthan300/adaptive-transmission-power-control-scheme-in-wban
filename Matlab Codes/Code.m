@@ -75,18 +75,19 @@ function s = is_static(array, idx)
     s = false;
     localmax_acc = islocalmax(array);
 
-    for itr = idx - 1:-1:1
+    for itr = idx - 1:-1:idx - 10
 
         if (localmax_acc(itr, 1) == 1)
             mid_point = (array(idx, 1) + array(itr, 1)) / 2;
             diff_val = abs(mid_point - array(idx, 1));
 
-            if (diff_val < 0.0070)
+            if (diff_val <= 0.0100)
                 s = true;
-%                 disp("diff : ");
-%                 disp(diff_val);
-%                 disp("idx : ");
-%                 disp(idx);
+                %                 disp("diff : ");
+                %                 disp(diff_val);
+                %                 disp("idx : ");
+                %                 disp(idx);
+                break;
             end
 
         end
