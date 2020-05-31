@@ -90,6 +90,7 @@ end
 bcqt = []; %best channel quality time
 tpl_used = [-5]; %tpl used
 threshold_rssi = [-65];
+current_rssi_range=[];
 
 while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
@@ -115,15 +116,20 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
             %New threshold RSSI
             curr_thres = threshold_calculator(rssi, ptr, next_point);
             %Current RSSI Range
-            crr = ((rssi(ptr, 1) + rssi(next_point, 1)) / 2) + curr_thres;
+            crr = (((rssi(ptr, 1) + rssi(next_point, 1)) / 2) + curr_thres)/2;
+            current_rssi_range=[current_rssi_range;crr];
             %Current TPL
-            current_tpl = tpl_used(size(tpl_used));
+            size_of_tpl_used = size(tpl_used);
+            size_of_tpl_used = size_of_tpl_used(1,1);
+            current_tpl = tpl_used(size_of_tpl_used,1);
             %Previous Threshold
-            prev_thres = threshold_rssi(size(threshold_rssi));
+            size_of_thres = size(threshold_rssi);
+            size_of_thres = size_of_thres(1,1);
+            prev_thres = threshold_rssi(size_of_thres,1);
             %New TPL
             new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
 
-            tpl_used = [tpl_used, new_tpl];
+            tpl_used = [tpl_used; new_tpl];
             threshold_rssi = [threshold_rssi; curr_thres];
         else
             d = 1;
@@ -184,7 +190,7 @@ end
 %cqt - Best channel quality time
 function lqe = cqt(Array, s, e)
     Array = transpose(Array);
-    numerator = (e - s) / 10;
+    numerator = (e - s);
     localMax = islocalmax(Array);
     first_maxima = 0;
     last_maxima = 0;
@@ -193,7 +199,7 @@ function lqe = cqt(Array, s, e)
 
         if localMax(itr) == 1
             first_maxima = itr;
-            break
+            break;
         end
 
     end
@@ -202,11 +208,12 @@ function lqe = cqt(Array, s, e)
 
         if localMax(itr) == 1
             last_maxima = itr;
+            break;
         end
 
     end
 
-    lqe = numerator / ((last_maxima - first_maxima) / 10);
+    lqe = numerator / (last_maxima - first_maxima);
 end
 
 function thres = threshold_calculator(Array, s, e)
@@ -215,7 +222,7 @@ function thres = threshold_calculator(Array, s, e)
     count = 0;
     sum = 0;
 
-    for itr = s:e;
+    for itr = s:e
 
         if (lmax(itr) == 1)
             sum = sum + Array(itr);
@@ -230,28 +237,32 @@ end
 function tpower = change_tpl(current_tpl, rssi_range, threshold, all_tpl)
     all_tpl = transpose(all_tpl);
     idx = 0;
+
     for itr = 1:5
 
         if (all_tpl(itr) == current_tpl)
             idx = itr;
+            break;
         end
 
     end
 
     if (rssi_range > threshold)
 
-        if (idx - 1 < 1)
-            tpower = current_tpl;
-        else
+        if (idx - 1 >= 1)
             tpower = all_tpl(idx - 1);
+
+        else
+            tpower = current_tpl;
         end
 
     else
 
-        if (idx + 1 > 5)
-            tpower = current_tpl;
-        else
+        if (idx + 1 <= 5)
             tpower = all_tpl(idx + 1);
+
+        else
+            tpower = current_tpl;
         end
 
     end
