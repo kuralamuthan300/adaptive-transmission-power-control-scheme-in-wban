@@ -150,7 +150,19 @@ clear csv_file;
 clear a;
 clear dynamic_ptr;
 clear static_ptr;
-
+clear crr;
+clear curr_thres;
+clear current_tpl;
+clear d;
+clear new_tpl;
+clear next_point;
+clear no_of_packets;
+clear prev_thres;
+clear ptr;
+clear s;
+clear size_of_thres;
+clear size_of_tpl_used;
+clear tpl;
 % Global min between s and e
 function index = g_min(Array, s, e)
     min = 1000;
