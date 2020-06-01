@@ -6,6 +6,7 @@ tpl = [-5; -1; 1; 3; 5];
 rssi = csv_file(:, 2);
 %rssi = sgolayfilt(rssi, 6, 21);
 
+localmax_rssi = islocalmax(rssi);
 acc_x = csv_file(:, 3);
 acc_y = csv_file(:, 4);
 acc_z = csv_file(:, 5);
@@ -25,6 +26,7 @@ clear acc_y;
 clear acc_z;
 
 %acc = sgolayfilt(acc, 6, 21);
+localmax_acc = islocalmax(acc);
 
 dynamic_points = [];
 static_points = [];
@@ -34,7 +36,7 @@ for itr = 1:30:no_of_packets
     if (itr + 29 <= no_of_packets)
         a = g_min(acc, itr, itr + 29);
 
-        if (is_static(acc, a))
+        if (is_static(acc, a, localmax_acc))
             static_points = [static_points; a];
         else
             dynamic_points = [dynamic_points; a];
@@ -43,7 +45,7 @@ for itr = 1:30:no_of_packets
     else
         a = g_min(acc, itr, no_of_packets);
 
-        if (is_static(acc, a))
+        if (is_static(acc, a, localmax_acc))
             static_points = [static_points; a];
         else
             dynamic_points = [dynamic_points; a];
@@ -98,37 +100,29 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
         next_point = static_points(static_ptr, 1);
 
         if (s == 1)
+            %{
+            for itr = ptr + 5:5:next_point
 
-            itr = ptr;
-
-            while (itr + 4 <= next_point)
-                sum = 0;
-
-                for i = itr:itr + 4
-                    sum = sum + rssi(i, 1);
-                end
-
-                crr = sum / 5;
-
+                crr = crr_static_to_static(rssi, itr - 5);
                 current_rssi_range = [current_rssi_range; crr];
-                curr_thres = threshold_calculator(rssi, itr, itr + 4);
-
+                %Threshold calculation
+                curr_thres = threshold_calculator(rssi, itr - 5, itr, localmax_rssi);
+                %Current TPL
                 size_of_tpl_used = size(tpl_used);
                 size_of_tpl_used = size_of_tpl_used(1, 1);
                 current_tpl = tpl_used(size_of_tpl_used, 1);
-
+                %Previous Threshold
                 size_of_thres = size(threshold_rssi);
                 size_of_thres = size_of_thres(1, 1);
                 prev_thres = threshold_rssi(size_of_thres, 1);
-
+                %New TPL
                 new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
-
                 tpl_used = [tpl_used; new_tpl];
                 threshold_rssi = [threshold_rssi; curr_thres];
 
-                itr = itr + 5;
             end
 
+            %}
         else
             d = 0;
             s = 1;
@@ -142,9 +136,9 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
         if (d == 1)
             %Best Channel Quality time
-            bcqt = [bcqt; cqt(rssi, ptr, next_point)];
+            bcqt = [bcqt; cqt(rssi, ptr, next_point, transpose(localmax_rssi))];
             %New threshold RSSI
-            curr_thres = threshold_calculator(rssi, ptr, next_point);
+            curr_thres = threshold_calculator(rssi, ptr, next_point, localmax_rssi);
             %Current RSSI Range
             crr = (((rssi(ptr, 1) + rssi(next_point, 1)) / 2) + curr_thres) / 2;
             current_rssi_range = [current_rssi_range; crr];
@@ -208,9 +202,9 @@ function index = g_min(Array, s, e)
 
 end
 
-function s = is_static(array, idx)
+function s = is_static(array, idx, lmax_acc)
     s = false;
-    localmax_acc = islocalmax(array);
+    localmax_acc = lmax_acc;
 
     for itr = idx - 1:-1:idx - 10
 
@@ -230,10 +224,10 @@ function s = is_static(array, idx)
 end
 
 %cqt - Best channel quality time
-function lqe = cqt(Array, s, e)
+function lqe = cqt(Array, s, e, lmax_arr)
     Array = transpose(Array);
     numerator = (e - s);
-    localMax = islocalmax(Array);
+    localMax = lmax_arr;
     first_maxima = 0;
     last_maxima = 0;
 
@@ -258,9 +252,9 @@ function lqe = cqt(Array, s, e)
     lqe = numerator / (last_maxima - first_maxima);
 end
 
-function thres = threshold_calculator(Array, s, e)
+function thres = threshold_calculator(Array, s, e, localmax_rssi)
     Array = transpose(Array);
-    lmax = islocalmax(Array);
+    lmax = transpose(localmax_rssi);
     count = 0;
     sum = 0;
 
@@ -309,4 +303,15 @@ function tpower = change_tpl(current_tpl, rssi_range, threshold, all_tpl)
 
     end
 
+end
+
+function crr = crr_static_to_static(array, start)
+
+    sum = 0;
+
+    for i = start:start + 5
+        sum = sum + array(i, 1);
+    end
+
+    crr = sum / 5;
 end
