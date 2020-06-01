@@ -90,7 +90,7 @@ end
 bcqt = []; %best channel quality time
 tpl_used = [-5]; %tpl used
 threshold_rssi = [-65];
-current_rssi_range=[];
+current_rssi_range = [];
 
 while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
@@ -98,6 +98,36 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
         next_point = static_points(static_ptr, 1);
 
         if (s == 1)
+
+            itr = ptr;
+
+            while (itr + 4 <= next_point)
+                sum = 0;
+
+                for i = itr:itr + 4
+                    sum = sum + rssi(i, 1);
+                end
+
+                crr = sum / 5;
+
+                current_rssi_range = [current_rssi_range; crr];
+                curr_thres = threshold_calculator(rssi, itr, itr + 4);
+
+                size_of_tpl_used = size(tpl_used);
+                size_of_tpl_used = size_of_tpl_used(1, 1);
+                current_tpl = tpl_used(size_of_tpl_used, 1);
+
+                size_of_thres = size(threshold_rssi);
+                size_of_thres = size_of_thres(1, 1);
+                prev_thres = threshold_rssi(size_of_thres, 1);
+
+                new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
+
+                tpl_used = [tpl_used; new_tpl];
+                threshold_rssi = [threshold_rssi; curr_thres];
+
+                itr = itr + 5;
+            end
 
         else
             d = 0;
@@ -116,16 +146,16 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
             %New threshold RSSI
             curr_thres = threshold_calculator(rssi, ptr, next_point);
             %Current RSSI Range
-            crr = (((rssi(ptr, 1) + rssi(next_point, 1)) / 2) + curr_thres)/2;
-            current_rssi_range=[current_rssi_range;crr];
+            crr = (((rssi(ptr, 1) + rssi(next_point, 1)) / 2) + curr_thres) / 2;
+            current_rssi_range = [current_rssi_range; crr];
             %Current TPL
             size_of_tpl_used = size(tpl_used);
-            size_of_tpl_used = size_of_tpl_used(1,1);
-            current_tpl = tpl_used(size_of_tpl_used,1);
+            size_of_tpl_used = size_of_tpl_used(1, 1);
+            current_tpl = tpl_used(size_of_tpl_used, 1);
             %Previous Threshold
             size_of_thres = size(threshold_rssi);
-            size_of_thres = size_of_thres(1,1);
-            prev_thres = threshold_rssi(size_of_thres,1);
+            size_of_thres = size_of_thres(1, 1);
+            prev_thres = threshold_rssi(size_of_thres, 1);
             %New TPL
             new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
 
