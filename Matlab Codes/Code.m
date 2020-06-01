@@ -187,6 +187,9 @@ clear s;
 clear size_of_thres;
 clear size_of_tpl_used;
 clear tpl;
+clear localmax
+clear localmax_rssi;
+clear localmax_acc
 % Global min between s and e
 function index = g_min(Array, s, e)
     min = 1000;
