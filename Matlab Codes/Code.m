@@ -100,13 +100,13 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
         next_point = static_points(static_ptr, 1);
 
         if (s == 1)
-            %{
-            for itr = ptr + 5:5:next_point
+            
+            for itr = ptr:5:next_point-5
 
-                crr = crr_static_to_static(rssi, itr - 5);
+                crr = crr_static_to_static(rssi, itr );
                 current_rssi_range = [current_rssi_range; crr];
                 %Threshold calculation
-                curr_thres = threshold_calculator(rssi, itr - 5, itr, localmax_rssi);
+                curr_thres = threshold_calculator(rssi, itr , itr, localmax_rssi);
                 %Current TPL
                 size_of_tpl_used = size(tpl_used);
                 size_of_tpl_used = size_of_tpl_used(1, 1);
@@ -122,7 +122,7 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
             end
 
-            %}
+            
         else
             d = 0;
             s = 1;
