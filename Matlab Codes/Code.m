@@ -100,29 +100,24 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
         next_point = static_points(static_ptr, 1);
 
         if (s == 1)
-            
-            for itr = ptr:5:next_point-5
 
-                crr = crr_static_to_static(rssi, itr );
-                current_rssi_range = [current_rssi_range; crr];
-                %Threshold calculation
-                curr_thres = threshold_calculator(rssi, itr , itr, localmax_rssi);
-                %Current TPL
-                size_of_tpl_used = size(tpl_used);
-                size_of_tpl_used = size_of_tpl_used(1, 1);
-                current_tpl = tpl_used(size_of_tpl_used, 1);
-                %Previous Threshold
-                size_of_thres = size(threshold_rssi);
-                size_of_thres = size_of_thres(1, 1);
-                prev_thres = threshold_rssi(size_of_thres, 1);
-                %New TPL
-                new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
-                tpl_used = [tpl_used; new_tpl];
-                threshold_rssi = [threshold_rssi; curr_thres];
+            crr = crr_static_to_static(rssi, ptr);
+            current_rssi_range = [current_rssi_range; crr];
+            %Threshold calculation
+            curr_thres = threshold_calculator(rssi, ptr, next_point - 1, localmax_rssi);
+            %Current TPL
+            size_of_tpl_used = size(tpl_used);
+            size_of_tpl_used = size_of_tpl_used(1, 1);
+            current_tpl = tpl_used(size_of_tpl_used, 1);
+            %Previous Threshold
+            size_of_thres = size(threshold_rssi);
+            size_of_thres = size_of_thres(1, 1);
+            prev_thres = threshold_rssi(size_of_thres, 1);
+            %New TPL
+            new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
+            tpl_used = [tpl_used; new_tpl];
+            threshold_rssi = [threshold_rssi; curr_thres];
 
-            end
-
-            
         else
             d = 0;
             s = 1;
@@ -312,9 +307,9 @@ function crr = crr_static_to_static(array, start)
 
     sum = 0;
 
-    for i = start:start + 5
+    for i = start:start +29
         sum = sum + array(i, 1);
     end
 
-    crr = sum / 5;
+    crr = sum / 29;
 end
