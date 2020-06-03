@@ -1,7 +1,8 @@
-%csv_file = csvread("Dataset/indoor_1.CSV");
+tic
+csv_file = csvread("Dataset/indoor_1.CSV");
 %csv_file = csvread("Dataset/indoor_2.CSV");
 %csv_file = csvread("Dataset/outdoor_1.CSV");
-csv_file = csvread("Dataset/outdoor_2.CSV");
+%csv_file = csvread("Dataset/outdoor_2.CSV");
 tpl = [-5; -1; 1; 3; 5];
 rssi = csv_file(:, 2);
 %rssi = sgolayfilt(rssi, 6, 21);
@@ -116,7 +117,11 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
             prev_thres = threshold_rssi(size_of_thres, 1);
             %New TPL
             new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
-            tpl_used = [tpl_used; new_tpl];
+
+            if (current_tpl ~= new_tpl)
+                tpl_used = [tpl_used; new_tpl];
+            end
+
             threshold_rssi = [threshold_rssi; curr_thres];
 
         else
@@ -138,7 +143,11 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
             prev_thres = threshold_rssi(size_of_thres, 1);
             %New TPL
             new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
-            tpl_used = [tpl_used; new_tpl];
+
+            if (current_tpl ~= new_tpl)
+                tpl_used = [tpl_used; new_tpl];
+            end
+
             threshold_rssi = [threshold_rssi; curr_thres];
 
             d = 0;
@@ -172,7 +181,10 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
             %New TPL
             new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
 
-            tpl_used = [tpl_used; new_tpl];
+            if (current_tpl ~= new_tpl)
+                tpl_used = [tpl_used; new_tpl];
+            end
+
             threshold_rssi = [threshold_rssi; curr_thres];
         else
             %static to dymanic activity
@@ -195,7 +207,10 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
             %New TPL
             new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
 
-            tpl_used = [tpl_used; new_tpl];
+            if (current_tpl ~= new_tpl)
+                tpl_used = [tpl_used; new_tpl];
+            end
+
             threshold_rssi = [threshold_rssi; curr_thres];
 
             d = 1;
@@ -232,6 +247,8 @@ clear tpl;
 clear localmax
 clear localmax_rssi;
 clear localmax_acc
+
+toc
 % Global min between s and e
 function index = g_min(Array, s, e)
     min = 1000;
