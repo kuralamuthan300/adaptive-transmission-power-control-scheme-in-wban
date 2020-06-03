@@ -121,6 +121,24 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
         else
             %dynamic to static activity
+
+            crr = crr_dynamic_to_static(rssi, ptr, next_point);
+            current_rssi_range = [current_rssi_range; crr];
+            %Threshold calculation
+            curr_thres = threshold_calculator(rssi, ptr, next_point - 1, localmax_rssi);
+            %Current TPL
+            size_of_tpl_used = size(tpl_used);
+            size_of_tpl_used = size_of_tpl_used(1, 1);
+            current_tpl = tpl_used(size_of_tpl_used, 1);
+            %Previous Threshold
+            size_of_thres = size(threshold_rssi);
+            size_of_thres = size_of_thres(1, 1);
+            prev_thres = threshold_rssi(size_of_thres, 1);
+            %New TPL
+            new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
+            tpl_used = [tpl_used; new_tpl];
+            threshold_rssi = [threshold_rssi; curr_thres];
+
             d = 0;
             s = 1;
         end
@@ -159,7 +177,7 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
             %Best Channel Quality time
             bcqt = [bcqt; cqt(rssi, ptr, next_point, transpose(localmax_rssi))];
             %current rssi range
-            crr = crr_static_to_dynamic(rssi, ptr + 1, next_point - 1, ptr, next_point);
+            crr = crr_static_to_dynamic(rssi, ptr, next_point);
             current_rssi_range = [current_rssi_range; crr];
 
             %New threshold RSSI
@@ -341,15 +359,22 @@ function crr = crr_static_to_static(array, start)
     crr = sum / 29;
 end
 
-function crr = crr_static_to_dynamic(array, s, e, s_point, d_point)
+function crr = crr_static_to_dynamic(array, s, e)
 
     sum = 0;
 
-    for i = s:e
+    for i = s + 1:e - 1
         sum = sum + array(i, 1);
     end
 
     crr = sum / (e - s);
-    crr = crr + (0.8 * (array(s_point, 1) + array(d_point, 1)));
+    crr = crr + (0.8 * (array(s, 1) + array(e, 1)));
     crr = crr / 2;
+end
+
+function crr = crr_dynamic_to_static(array, s, e)
+    crr = (array(s, 1) + array(e, 1)) / 2;
+    crr = crr + threshold_calculator(array, s, e, islocalmax(array));
+    crr = crr / 2;
+    crr = crr - (0.2 * (array(s, 1) + array(e, 1)));
 end
