@@ -1,7 +1,7 @@
-csv_file = csvread("Dataset/indoor_1.CSV");
+%csv_file = csvread("Dataset/indoor_1.CSV");
 %csv_file = csvread("Dataset/indoor_2.CSV");
 %csv_file = csvread("Dataset/outdoor_1.CSV");
-%csv_file = csvread("Dataset/outdoor_2.CSV");
+csv_file = csvread("Dataset/outdoor_2.CSV");
 tpl = [-5; -1; 1; 3; 5];
 rssi = csv_file(:, 2);
 %rssi = sgolayfilt(rssi, 6, 21);
@@ -101,7 +101,7 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
         if (s == 1)
             %static to static activity
-
+            %Current RSSI Range
             crr = crr_static_to_static(rssi, ptr);
             current_rssi_range = [current_rssi_range; crr];
             %Threshold calculation
@@ -121,7 +121,9 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
         else
             %dynamic to static activity
-
+            %Best Channel Quality time
+            bcqt = [bcqt; cqt(rssi, ptr, next_point, transpose(localmax_rssi))];
+            %Current RSSI Range
             crr = crr_dynamic_to_static(rssi, ptr, next_point);
             current_rssi_range = [current_rssi_range; crr];
             %Threshold calculation
@@ -249,7 +251,11 @@ function s = is_static(array, idx, lmax_acc)
     s = false;
     localmax_acc = lmax_acc;
 
-    for itr = idx - 1:-1:idx - 10
+    for itr = idx - 1:-1:idx - 15
+
+        if (itr < 1)
+            break;
+        end
 
         if (localmax_acc(itr, 1) == 1)
             mid_point = (array(idx, 1) + array(itr, 1)) / 2;
