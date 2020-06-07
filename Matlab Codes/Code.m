@@ -1,4 +1,3 @@
-tic
 csv_file = csvread("Dataset/indoor_1.CSV");
 %csv_file = csvread("Dataset/indoor_2.CSV");
 %csv_file = csvread("Dataset/outdoor_1.CSV");
@@ -95,6 +94,9 @@ tpl_used = [-5]; %tpl used
 threshold_rssi = [-65];
 current_rssi_range = [];
 
+bcqt_flag = 0;
+tpl_flag = 0;
+
 while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
     if (static_points(static_ptr, 1) < dynamic_points(dynamic_ptr, 1))
@@ -165,6 +167,17 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
             %Best Channel Quality time
             bcqt = [bcqt; cqt(rssi, ptr, next_point, transpose(localmax_rssi))];
+            %Time required to calculate Best channel quality time :
+            if (bcqt_flag == 0)
+                tic
+                disp(' ');
+                disp('Time required to calculate Best channel quality time :');
+                cqt(rssi, ptr, next_point, transpose(localmax_rssi));
+                bcqt_flag = 1;
+                toc
+                disp(' ');
+            end
+
             %New threshold RSSI
             curr_thres = threshold_calculator(rssi, ptr, next_point, localmax_rssi);
             %Current RSSI Range
@@ -180,6 +193,16 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
             prev_thres = threshold_rssi(size_of_thres, 1);
             %New TPL
             new_tpl = change_tpl(current_tpl, crr, prev_thres, tpl);
+
+            if (tpl_flag == 0)
+                tic
+                disp(' ');
+                disp('Time required to calculate Transmission power level:');
+                change_tpl(current_tpl, crr, prev_thres, tpl);
+                tpl_flag = 1;
+                toc
+                disp(' ');
+            end
 
             if (current_tpl ~= new_tpl)
                 tpl_used = [tpl_used; new_tpl];
@@ -247,8 +270,10 @@ clear tpl;
 clear localmax
 clear localmax_rssi;
 clear localmax_acc
+clear bcqt_flag;
+clear tpl_flag;
+clear ans;
 
-toc
 % Global min between s and e
 function index = g_min(Array, s, e)
     min = 1000;
