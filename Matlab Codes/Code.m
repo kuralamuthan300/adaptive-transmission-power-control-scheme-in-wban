@@ -251,10 +251,19 @@ end
 size_of_tpl_used = size(tpl_used);
 size_of_tpl_used = size_of_tpl_used(1, 1);
 
+figure(1)
 histogram(tpl_used);
 xlabel('TPL(-dBm)')
 ylabel('Count')
 title('TPL used')
+
+figure(2)
+bar(transpose(bcqt))
+xlabel('1 unit = Channel quality time between 2 critical points ')
+ylabel('Channel quality time')
+title('Best Channel quality time')
+
+
 
 clear size_dynamic;
 clear size_static;
