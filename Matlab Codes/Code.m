@@ -263,6 +263,12 @@ xlabel('1 unit = Channel quality time between 2 critical points ')
 ylabel('Channel quality time')
 title('Best Channel quality time')
 
+figure(2)
+bar(transpose(bcqt))
+xlabel('1 unit = Channel quality time between 2 critical points ')
+ylabel('Channel quality time')
+title('Best Channel quality time')
+
 
 
 clear size_dynamic;
