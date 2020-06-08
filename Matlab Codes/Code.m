@@ -263,11 +263,20 @@ xlabel('1 unit = Channel quality time between 2 critical points ')
 ylabel('Channel quality time')
 title('Best Channel quality time')
 
-figure(2)
-bar(transpose(bcqt))
-xlabel('1 unit = Channel quality time between 2 critical points ')
-ylabel('Channel quality time')
-title('Best Channel quality time')
+
+rssi_peak_plot = [];
+for itr = 1:30
+    rssi_peak_plot = [rssi_peak_plot;rssi(itr,1)];
+end
+
+figure(3)
+x = 1:30;
+A = transpose(rssi_peak_plot);
+TF = islocalmax(A);
+plot(x,A,x(TF),A(TF),'r*');
+xlabel('1 unit = 100ms')
+ylabel('RSSI (dBm)')
+title('RSSI Local maxima for 3 seconds')
 
 
 
