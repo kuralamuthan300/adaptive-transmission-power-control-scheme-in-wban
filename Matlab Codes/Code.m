@@ -247,6 +247,14 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
 end
 
+%TPL Plot
+size_of_tpl_used = size(tpl_used);
+size_of_tpl_used = size_of_tpl_used(1, 1);
+
+x = [1:size_of_tpl_used];
+y = transpose(tpl_used);
+(x, y), xlabel('Time (1 unit = 100 ms)'), ylabel('Transmission power level (dBm)'), title('TPL')
+
 clear size_dynamic;
 clear size_static;
 clear itr;
