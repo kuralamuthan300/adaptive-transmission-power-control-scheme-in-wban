@@ -4,7 +4,7 @@ csv_file = csvread("Dataset/indoor_1.CSV");
 %csv_file = csvread("Dataset/outdoor_2.CSV");
 tpl = [-5; -1; 1; 3; 5];
 rssi = csv_file(:, 2);
-%rssi = sgolayfilt(rssi, 6, 21);
+rssi = sgolayfilt(rssi, 6, 21);
 
 localmax_rssi = islocalmax(rssi);
 acc_x = csv_file(:, 3);
@@ -25,7 +25,7 @@ clear acc_x;
 clear acc_y;
 clear acc_z;
 
-%acc = sgolayfilt(acc, 6, 21);
+acc = sgolayfilt(acc, 6, 21);
 localmax_acc = islocalmax(acc);
 
 dynamic_points = [];
