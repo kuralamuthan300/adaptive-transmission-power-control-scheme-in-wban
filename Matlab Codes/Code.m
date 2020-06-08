@@ -251,9 +251,10 @@ end
 size_of_tpl_used = size(tpl_used);
 size_of_tpl_used = size_of_tpl_used(1, 1);
 
-x = [1:size_of_tpl_used];
-y = transpose(tpl_used);
-(x, y), xlabel('Time (1 unit = 100 ms)'), ylabel('Transmission power level (dBm)'), title('TPL')
+histogram(tpl_used);
+xlabel('TPL(-dBm)')
+ylabel('Count')
+title('TPL used')
 
 clear size_dynamic;
 clear size_static;
@@ -422,7 +423,6 @@ function crr = crr_static_to_dynamic(array, s, e)
     for i = s + 1:e - 1
         sum = sum + array(i, 1);
     end
-
     crr = sum / (e - s);
     crr = crr + (0.8 * (array(s, 1) + array(e, 1)));
     crr = crr / 2;
