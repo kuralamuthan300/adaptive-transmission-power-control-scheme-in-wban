@@ -4,7 +4,7 @@ csv_file = csvread("Dataset/indoor_1.CSV");
 %csv_file = csvread("Dataset/outdoor_2.CSV");
 tpl = [-5; -1; 1; 3; 5];
 rssi = csv_file(:, 2);
-rssi = sgolayfilt(rssi, 6, 21);
+%rssi = sgolayfilt(rssi, 6, 21);
 
 localmax_rssi = islocalmax(rssi);
 acc_x = csv_file(:, 3);
@@ -25,7 +25,7 @@ clear acc_x;
 clear acc_y;
 clear acc_z;
 
-acc = sgolayfilt(acc, 6, 21);
+%acc = sgolayfilt(acc, 6, 21);
 localmax_acc = islocalmax(acc);
 
 dynamic_points = [];
@@ -263,22 +263,20 @@ xlabel('1 unit = Channel quality time between 2 critical points ')
 ylabel('Channel quality time')
 title('Best Channel quality time')
 
-
 rssi_peak_plot = [];
+
 for itr = 1:30
-    rssi_peak_plot = [rssi_peak_plot;rssi(itr,1)];
+    rssi_peak_plot = [rssi_peak_plot; rssi(itr, 1)];
 end
 
 figure(3)
 x = 1:30;
 A = transpose(rssi_peak_plot);
 TF = islocalmax(A);
-plot(x,A,x(TF),A(TF),'r*');
+plot(x, A, x(TF), A(TF), 'r*');
 xlabel('1 unit = 100ms')
 ylabel('RSSI (dBm)')
 title('RSSI Local maxima for 3 seconds')
-
-
 
 clear size_dynamic;
 clear size_static;
@@ -306,6 +304,9 @@ clear localmax_acc
 clear bcqt_flag;
 clear tpl_flag;
 clear ans;
+clear x;
+clear TF;
+clear A;
 
 % Global min between s and e
 function index = g_min(Array, s, e)
@@ -447,6 +448,7 @@ function crr = crr_static_to_dynamic(array, s, e)
     for i = s + 1:e - 1
         sum = sum + array(i, 1);
     end
+
     crr = sum / (e - s);
     crr = crr + (0.8 * (array(s, 1) + array(e, 1)));
     crr = crr / 2;
