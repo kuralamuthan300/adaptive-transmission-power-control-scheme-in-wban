@@ -1,5 +1,5 @@
-csv_file = csvread("Dataset/indoor_1.CSV");
-%csv_file = csvread("Dataset/indoor_2.CSV");
+%csv_file = csvread("Dataset/indoor_1.CSV");
+csv_file = csvread("Dataset/indoor_2.CSV");
 %csv_file = csvread("Dataset/outdoor_1.CSV");
 %csv_file = csvread("Dataset/outdoor_2.CSV");
 tpl = [-5; -1; 1; 3; 5];
@@ -17,6 +17,8 @@ size_sequence = size(sequence);
 size_sequence = size_sequence(1, 2);
 pdr = 1 - (packet_delivery_ratio(sequence, size_sequence) / sequence(size_sequence));
 
+clear size_sequence;
+clear sequence;
 no_of_packets = size(csv_file);
 no_of_packets = no_of_packets(1, 1);
 acc = zeros(no_of_packets, 1);
@@ -103,12 +105,23 @@ current_rssi_range = [];
 bcqt_flag = 0;
 tpl_flag = 0;
 
+s_to_s = zeros(1, 2);
+s_to_d = zeros(1, 2);
+d_to_d = zeros(1, 2);
+d_to_s = zeros(1, 2);
+
 while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
     if (static_points(static_ptr, 1) < dynamic_points(dynamic_ptr, 1))
         next_point = static_points(static_ptr, 1);
 
         if (s == 1)
+
+            if (s_to_s(1) == 0)
+                s_to_s(1) = static_points(static_ptr - 1, 1);;
+                s_to_s(2) = static_points(static_ptr, 1);;
+            end
+
             %static to static activity
             %Current RSSI Range
             crr = crr_static_to_static(rssi, ptr);
@@ -134,6 +147,11 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
         else
             %dynamic to static activity
+            if (d_to_s(1) == 0)
+                d_to_s(1) = dynamic_points(dynamic_ptr - 1, 1);
+                d_to_s(2) = static_points(static_ptr, 1);
+            end
+
             %Best Channel Quality time
             bcqt = [bcqt; cqt(rssi, ptr, next_point, transpose(localmax_rssi))];
             %Current RSSI Range
@@ -170,6 +188,10 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
         if (d == 1)
             %dynamic to dynamic activity
+            if (d_to_d(1) == 0)
+                d_to_d(1) = dynamic_points(dynamic_ptr - 1, 1);
+                d_to_d(2) = dynamic_points(dynamic_ptr, 1);
+            end
 
             %Best Channel Quality time
             bcqt = [bcqt; cqt(rssi, ptr, next_point, transpose(localmax_rssi))];
@@ -217,6 +239,11 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
             threshold_rssi = [threshold_rssi; curr_thres];
         else
             %static to dymanic activity
+            if (s_to_d(1) == 0)
+                s_to_d(1) = static_points(static_ptr - 1, 1);
+                s_to_d(2) = dynamic_points(dynamic_ptr, 1);
+            end
+
             %Best Channel Quality time
             bcqt = [bcqt; cqt(rssi, ptr, next_point, transpose(localmax_rssi))];
             %current rssi range
