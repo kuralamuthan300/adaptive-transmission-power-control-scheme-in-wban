@@ -11,6 +11,12 @@ acc_x = csv_file(:, 3);
 acc_y = csv_file(:, 4);
 acc_z = csv_file(:, 5);
 
+%packet delivery ratio
+sequence = transpose(csv_file(:, 9));
+size_sequence = size(sequence);
+size_sequence = size_sequence(1, 2);
+pdr = 1 - (packet_delivery_ratio(sequence, size_sequence) / sequence(size_sequence));
+
 no_of_packets = size(csv_file);
 no_of_packets = no_of_packets(1, 1);
 acc = zeros(no_of_packets, 1);
@@ -90,7 +96,7 @@ else
 end
 
 bcqt = []; %best channel quality time
-tpl_used = [-5]; %tpl used
+tpl_used = [-1]; %tpl used
 threshold_rssi = [-65];
 current_rssi_range = [];
 
@@ -247,6 +253,8 @@ while (static_ptr <= size_static && dynamic_ptr <= size_dynamic)
 
 end
 
+%Packet delivery rate
+
 %TPL Plot
 size_of_tpl_used = size(tpl_used);
 size_of_tpl_used = size_of_tpl_used(1, 1);
@@ -320,6 +328,33 @@ function index = g_min(Array, s, e)
         end
 
     end
+
+end
+
+%Packet delivery ratio
+function pdr = packet_delivery_ratio(Array, Arr_size)
+
+    i = 1;
+    j = 2;
+    pdr = 0;
+
+    while j <= Arr_size
+        d = Array(j) - Array(i);
+
+        if d > 1
+            pdr = pdr + d;
+        end
+
+        i = i + 1;
+        j = j + 1;
+
+    end
+
+    clear i;
+    clear j;
+    clear d;
+    clear Array;
+    clear Arr_size;
 
 end
 
