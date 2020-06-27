@@ -298,20 +298,11 @@ xlabel('1 unit = Channel quality time between 2 critical points ')
 ylabel('Channel quality time')
 title('Best Channel quality time')
 
-rssi_peak_plot = [];
-
-for itr = 1:30
-    rssi_peak_plot = [rssi_peak_plot; rssi(itr, 1)];
-end
-
-figure(3)
-x = 1:30;
-A = transpose(rssi_peak_plot);
-TF = islocalmax(A);
-plot(x, A, x(TF), A(TF), 'r*');
-xlabel('1 unit = 100ms')
-ylabel('RSSI (dBm)')
-title('RSSI Local maxima for 3 seconds')
+%uncomment required to get corressponding plot
+plot_rssi_acc(s_to_s, rssi, acc, 1); %static to static
+%plot_rssi_acc(d_to_s, rssi, acc, 2); %dynamic to static
+%plot_rssi_acc(d_to_d, rssi, acc, 3); %dynamic to dynamic
+%plot_rssi_acc(s_to_d, rssi, acc, 4); %static to dynamic
 
 clear size_dynamic;
 clear size_static;
@@ -342,6 +333,58 @@ clear ans;
 clear x;
 clear TF;
 clear A;
+
+%plot rssi and acc
+
+function v = plot_rssi_acc(index_arr, rs, ac, label)
+
+    rssi_peak_plot = [];
+    acc_peak_plot = [];
+
+    for itr = index_arr(1):index_arr(2)
+        rssi_peak_plot = [rssi_peak_plot; rs(itr, 1)];
+        acc_peak_plot = [acc_peak_plot, ac(itr, 1)];
+    end
+
+    figure(3)
+    x = index_arr(1):index_arr(2);
+    A = transpose(rssi_peak_plot);
+    TF = islocalmax(A);
+    plot(x, A, x(TF), A(TF), 'r*');
+    xlabel('1 unit = 100ms')
+    ylabel('RSSI (dBm)')
+
+    if (label == 1)
+        title('RSSI Local maxima for s to s')
+    elseif (label == 2)
+        title('RSSI Local maxima for d to s')
+    elseif (label == 3)
+        title('RSSI Local maxima for d to d')
+    elseif (label == 4)
+        title('RSSI Local maxima for s to d')
+    end
+
+    figure(4)
+
+    Ac = transpose(acc_peak_plot);
+    TF = islocalmax(Ac);
+    plot(x, Ac, x(TF), Ac(TF), 'r*');
+    xlabel('1 unit = 100ms')
+    ylabel('Acc (m/(s^2))');
+
+    if (label == 1)
+        title('Acc Local maxima for s to s')
+    elseif (label == 2)
+        title('Acc Local maxima for d to s')
+    elseif (label == 3)
+        title('Acc Local maxima for d to d')
+    elseif (label == 4)
+        title('Acc Local maxima for s to d')
+    end
+
+    v = 1;
+
+end
 
 % Global min between s and e
 function index = g_min(Array, s, e)
