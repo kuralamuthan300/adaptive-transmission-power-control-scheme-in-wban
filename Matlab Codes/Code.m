@@ -304,6 +304,32 @@ plot_rssi_acc(s_to_s, rssi, acc, 1); %static to static
 %plot_rssi_acc(d_to_d, rssi, acc, 3); %dynamic to dynamic
 %plot_rssi_acc(s_to_d, rssi, acc, 4); %static to dynamic
 
+
+
+
+    figure(5)
+    x = 1:no_of_packets;
+    Ac = transpose(acc);
+    TF = dynamic_points;
+    plot(x, Ac, x(TF), Ac(TF), 'r*');
+    xlabel('1 unit = 100ms')
+    ylabel('Acc (m/(s^2))');
+    title("Acc global minima for every 3s (Dynamic points)");
+
+    figure(6)
+
+    x = 1:no_of_packets;
+    Ac = transpose(acc);
+    TF = static_points;
+    plot(x, Ac, x(TF), Ac(TF), 'g*');
+    xlabel('1 unit = 100ms')
+    ylabel('Acc (m/(s^2))');
+    title("Acc global minima for every 3s (Static points)");
+
+
+
+
+    
 clear size_dynamic;
 clear size_static;
 clear itr;
@@ -442,7 +468,7 @@ function s = is_static(array, idx, lmax_acc)
             mid_point = (array(idx, 1) + array(itr, 1)) / 2;
             diff_val = abs(mid_point - array(idx, 1));
 
-            if (diff_val <= 0.0100)
+            if (diff_val <= 0.02)
                 s = true;
                 break;
             end
